@@ -1,0 +1,30 @@
+#+TITLE: Galaxy tools tests
+various tools for toolshed repeatexplorer related tools. Tests use galaxy api accessed by bioblend package
+
+* Usage:
+
+#+BEGIN_EXAMPLE
+usage: galaxy_testing.py [-h] [-k KEY] [-g GALAXY_URL]
+
+Upload data to galaxy instance and perform tests
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -k KEY, --key KEY
+  -g GALAXY_URL, --galaxy_url GALAXY_URL
+
+api key and galaxy url can be provided in credentials.py file
+
+#+END_EXAMPLE
+
+
+credentials.py example:
+#+BEGIN_SRC python
+# this file is only used when not key or galaxy_url is provided
+my_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+url = '172.20.4.26:8080'
+#+END_SRC
+
+
+
+
