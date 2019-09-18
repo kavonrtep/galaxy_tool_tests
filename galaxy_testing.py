@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import time
 import argparse
+from collections import OrderedDict
 from bioblend.galaxy import GalaxyInstance
 from bioblend.galaxy.tools.inputs import inputs, dataset, conditional
-from collections import OrderedDict
 from tests import tools, files_to_upload
 
 def make_inputs(input_params):
@@ -38,8 +38,65 @@ def create_run_definition(dataset_id, tool_dict):
              ('B', dataset(dataset_id['fq2'])),
              ('sampling', conditional().set('sequence_sampling', 'true').set('sample_size', 500))
          ])
+        },
+        {'tool' : tool_dict['single_fastq_filtering'],
+         'inputs' : OrderedDict([
+             ('A', dataset(dataset_id['fq1'])),
+             ('sampling', conditional().set('sequence_sampling', 'true').set('sample_size', 500))
+         ])
+        }
+
+    ]
+    affixer_runs=[
+        {'tool' : tool_dict['fasta_affixer'],
+         'inputs' : OrderedDict([
+             ('input', dataset(dataset_id['input_fasta'])),
+             ('prefix', "PREFIX"),
+             ('suffix', 'SUFFIX')
+         ])
+        },
+        {'tool' : tool_dict['names_affixer'],
+         'inputs' : OrderedDict([
+             ('input', dataset(dataset_id['fq1'])),
+             ('prefix', "PREFIX"),
+             ('suffix', 'SUFFIX')
+         ])
         }
     ]
+    various_utils = [
+        {'tool' : tool_dict['sampler'],
+         'inputs' : OrderedDict([
+             ('input', dataset(dataset_id['input_fasta'])),
+             ('number', 500)
+         ])
+        },
+        {'tool' : tool_dict['fasta_interlacer'],
+         'inputs' : OrderedDict([
+             ('A', dataset(dataset_id['fastaA'])),
+             ('B', dataset(dataset_id['fastaB']))
+         ])
+        },
+        {'tool' : tool_dict['rename_sequences'],
+         'inputs' : OrderedDict([
+             ('input', dataset(dataset_id['fastaA'])),
+             ('prefix_length', 3)
+         ])
+        },
+        {'tool' : tool_dict['chip_seq_ratio'],
+         'inputs' : OrderedDict([
+             ('ChipSeq', dataset(dataset_id['chip_fasta'])),
+             ('InputSeq', dataset(dataset_id['input_fasta'])),
+             ('Contigs', dataset(dataset_id['clustering_contigs']))
+         ])
+        },
+        {'tool' : tool_dict['pair_scan'],
+         'inputs' : OrderedDict([
+             ('fasta_input', dataset(dataset_id['interlaced_fasta']))
+         ])
+        }
+
+    ]
+
     dante_runs = [
         {'tool' : tool_dict['dante'],
          'inputs' : OrderedDict([
@@ -63,10 +120,28 @@ def create_run_definition(dataset_id, tool_dict):
          'inputs' : OrderedDict([
              ('gff', dataset(dataset_id['gff_dante']))
          ])
+        },
+        {'tool' : tool_dict['gff_to_tabular'],
+         'inputs' : OrderedDict([
+             ('gff', dataset(dataset_id['gff_dante']))
+         ])
+        },
+        {'tool' : tool_dict['gff_extract'],
+         'inputs' : OrderedDict([
+             ('input_dna', dataset(dataset_id['gepy_genome'])),
+             ('domains_gff', dataset(dataset_id['gff_dante']))
+         ])
+        },
+        {'tool' : tool_dict['gff_summary'],
+         'inputs' : OrderedDict([
+             ('group', "Name"),
+             ('inputgff', dataset(dataset_id['gff_dante']))
+         ])
         }
+
     ]
 
-    runs = filtering_runs + dante_runs
+    runs = affixer_runs + filtering_runs + dante_runs + various_utils
     return runs
 
 def get_args():
@@ -98,7 +173,7 @@ def main():
         )
         result_id += [i['id'] for i in result['outputs']]
         # wait between submited jobs?
-        time.sleep(10)
+        time.sleep(30)
 
     # wait for runs to finish and repost status
     while True:
@@ -130,7 +205,7 @@ def main():
         ))
         if (running_job + new_job + queued_job) == 0:
             break
-        time.sleep(3)
+        time.sleep(10)
 
     for i in result_id + list(dataset_id.values()):
         result = gi.datasets.show_dataset(i)
@@ -138,6 +213,15 @@ def main():
         print("Job name    :", result['name'])
         print("Job state  :", result['state'])
         print("Output peak  :\n", result['peek'])
+
+    print("--------------------------")
+    print(("new    : {}\n"
+           "queued : {}\n"
+           "running: {}\n"
+           "ok     : {}\n"
+           "error  : {}\n"
+           "".format(new_job, queued_job, running_job, ok_job, error_job)
+    ))
 
 
 if __name__ == "__main__":
