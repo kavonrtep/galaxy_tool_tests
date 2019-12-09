@@ -32,8 +32,7 @@ files_to_upload = {
     'clustering_contigs' : 'test_data/VTS_contigs.info.minRD5',
     'fastaA' : "test_data/seq_read_pairA.fas",
     'fastaB' : "test_data/seq_read_pairB.fas",
-    'interlaced_fasta' : "test_data/pair_reads.fasta",
-    'repex_archive' : "test_data/repex_archive.zip"
+    'interlaced_fasta' : "test_data/pair_reads.fasta"
 }
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import time
+import datetime
 import argparse
 from collections import OrderedDict
 from bioblend.galaxy import GalaxyInstance
@@ -161,19 +162,25 @@ def get_args():
 def main():
     args = get_args()
     gi = GalaxyInstance(args.galaxy_url, args.key)
-    dataset_id, h1 = add_files_to_new_history(gi, files_to_upload)
+    history_name = "test_history_{}".format(str(datetime.datetime.now()))
+    dataset_id, h1 = add_files_to_new_history(gi, files_to_upload,
+                                              history_name)
     runs = create_run_definition(dataset_id, tools)
 
     result_id = []
     for r in runs:
-        result = gi.tools.run_tool(
-            history_id=h1['id'],
-            tool_id=r['tool'],
-            tool_inputs=make_inputs(r['inputs'])
-        )
-        result_id += [i['id'] for i in result['outputs']]
-        # wait between submited jobs?
-        time.sleep(30)
+        try:
+            result = gi.tools.run_tool(
+                history_id=h1['id'],
+                tool_id=r['tool'],
+                tool_inputs=make_inputs(r['inputs'])
+            )
+            result_id += [i['id'] for i in result['outputs']]
+            # wait between submited jobs?
+            time.sleep(30)
+        except:
+            print("job failed")
+            print(r)
 
     # wait for runs to finish and repost status
     while True:
@@ -220,10 +227,8 @@ def main():
            "running: {}\n"
            "ok     : {}\n"
            "error  : {}\n"
-           "".format(new_job, queued_job, running_job, ok_job, error_job)
-    ))
+           "".format(new_job, queued_job, running_job, ok_job, error_job)))
 
 
 if __name__ == "__main__":
     main()
-
