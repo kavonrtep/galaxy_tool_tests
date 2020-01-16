@@ -85,9 +85,9 @@ def create_run_definition(dataset_id, tool_dict):
         },
         {'tool' : tool_dict['chip_seq_ratio'],
          'inputs' : OrderedDict([
-             ('ChipSeq', dataset(dataset_id['chip_fasta'])),
-             ('InputSeq', dataset(dataset_id['input_fasta'])),
-             ('Contigs', dataset(dataset_id['clustering_contigs']))
+             ('ChipFile', dataset(dataset_id['chip_fasta'])),
+             ('InputFile', dataset(dataset_id['input_fasta'])),
+             ('ContigFile', dataset(dataset_id['clustering_contigs']))
          ])
         },
         {'tool' : tool_dict['pair_scan'],
@@ -119,12 +119,12 @@ def create_run_definition(dataset_id, tool_dict):
         },
         {'tool' : tool_dict['domain_filter'],
          'inputs' : OrderedDict([
-             ('gff', dataset(dataset_id['gff_dante']))
+             ('DomGff', dataset(dataset_id['gff_dante']))
          ])
         },
         {'tool' : tool_dict['gff_to_tabular'],
          'inputs' : OrderedDict([
-             ('gff', dataset(dataset_id['gff_dante']))
+             ('inputgff', dataset(dataset_id['gff_dante']))
          ])
         },
         {'tool' : tool_dict['gff_extract'],
